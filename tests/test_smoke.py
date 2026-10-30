@@ -74,7 +74,7 @@ def test_location_defaults_and_country_inference():
     assert infer_country("Worldwide") == "usa"
     assert is_worldwide_location("Remote worldwide")
 
-def test_search_defaults_to_worldwide_remote_and_recent_jobs(monkeypatch):
+def test_search_defaults_to_worldwide_without_location_or_remote_filter(monkeypatch):
     from app import scraper
     from app.main import SearchRequest
 
@@ -102,7 +102,7 @@ def test_search_defaults_to_worldwide_remote_and_recent_jobs(monkeypatch):
     assert request.location == "Worldwide"
     assert request.hours_old == 720
     assert calls["location"] is None
-    assert calls["is_remote"] is True
+    assert calls["is_remote"] is False
     assert calls["hours_old"] == 720
 
 def test_recent_date_filter_uses_current_30_day_window():

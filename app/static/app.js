@@ -1,11 +1,11 @@
 const $ = id => document.getElementById(id);
 const sources = ["linkedin","indeed","glassdoor","zip_recruiter","google","bayt","naukri","jobicy","remoteok","arbeitnow_eu","arbeitnow_uk"];
 const sourceCoverage = {
-  linkedin:"Worldwide remote search",
-  indeed:"Remote search · defaults to US",
-  glassdoor:"Remote search · availability varies",
+  linkedin:"Worldwide · no location filter",
+  indeed:"No city filter · defaults to US",
+  glassdoor:"No location filter · availability varies",
   zip_recruiter:"Primarily North America",
-  google:"Remote search · availability varies",
+  google:"No location filter · availability varies",
   bayt:"Middle East and North Africa",
   naukri:"Primarily India",
   jobicy:"Remote · worldwide regions · recent 7-day feed",remoteok:"Remote · worldwide",
