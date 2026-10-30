@@ -11,11 +11,6 @@ const sourceCoverage = {
   jobicy:"Remote · worldwide regions · recent 7-day feed",remoteok:"Remote · worldwide",
   arbeitnow_eu:"Europe",arbeitnow_uk:"United Kingdom"
 };
-const directPortals = {
-  simplyhired:"https://www.simplyhired.com/search",
-  hiringcafe:"https://hiringcafe.com/",
-  jobright:"https://jobright.ai/"
-};
 let allJobs = [];
 let searchRunning = false;
 let currentLocation = "Worldwide";
@@ -48,23 +43,6 @@ function initSources(){
       ${sourceCoverage[source]?`<small class="portal-coverage">${sourceCoverage[source]}</small>`:""}</span>
     </label>`).join("");
 }
-function isWorldwide(value){
-  return ["worldwide","global","anywhere","remote worldwide","remote anywhere"]
-    .includes(String(value||"").trim().toLowerCase());
-}
-function updateDirectPortalLinks(){
-  const search=new URL(directPortals.simplyhired);
-  const term=$("term").value.trim();
-  const location=$("location").value.trim();
-  if(term)search.searchParams.set("q",term);
-  if(location&&!isWorldwide(location))search.searchParams.set("l",location);
-  $("direct-portal-simplyhired").href=search.href;
-  $("direct-portal-hiringcafe").href=directPortals.hiringcafe;
-  $("direct-portal-jobright").href=directPortals.jobright;
-}
-$("term").addEventListener("input",updateDirectPortalLinks);
-$("location").addEventListener("input",updateDirectPortalLinks);
-updateDirectPortalLinks();
 function selectedSources(){
   return [...document.querySelectorAll("#source-options input:checked")].map(input=>input.value);
 }
