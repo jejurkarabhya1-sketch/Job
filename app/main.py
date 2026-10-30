@@ -1,5 +1,6 @@
 import json, logging, time, urllib.parse, urllib.request
 from pathlib import Path
+from threading import Lock
 from typing import Optional
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from contextlib import asynccontextmanager
@@ -21,11 +22,12 @@ STATIC = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 LOCATION_CACHE = {}
 SEARCH_STATUS = {}
+SEARCH_LOCK = Lock()
 
 class SearchRequest(BaseModel):
     search_term: str = Field(min_length=2, max_length=120)
-    location: str = Field(default="India", max_length=120)
-    sources: list[str] = Field(default_factory=lambda: ["linkedin","indeed","naukri"])
+    location: str = Field(default="Worldwide", max_length=120)
+    sources: list[str] = Field(default_factory=lambda: ["linkedin","indeed","jobicy","remoteok"])
     results_wanted: int = Field(default=25, ge=1, le=100)
     hours_old: int = Field(default=720, ge=1, le=720)
     experience: str = Field(default="any", pattern="^(any|0-1|1-3|3-5|5-8|8\\+)$")
@@ -35,16 +37,24 @@ def save_jobs(items):
         for j in items:
             db.execute("""
             INSERT INTO jobs(fingerprint,source,title,company,location,date_posted,job_url,description,
-                min_amount,max_amount,currency,is_remote,experience_range,skills,last_seen_at)
+                min_amount,max_amount,currency,is_remote,experience_range,search_location,skills,last_seen_at)
             VALUES(:fingerprint,:source,:title,:company,:location,:date_posted,:job_url,:description,
-                :min_amount,:max_amount,:currency,:is_remote,:experience_range,:skills,CURRENT_TIMESTAMP)
+                :min_amount,:max_amount,:currency,:is_remote,:experience_range,:search_location,:skills,CURRENT_TIMESTAMP)
             ON CONFLICT(fingerprint) DO UPDATE SET
                 last_seen_at=CURRENT_TIMESTAMP,
                 description=CASE WHEN excluded.description!='' THEN excluded.description ELSE jobs.description END,
-                experience_range=CASE WHEN excluded.experience_range!='' THEN excluded.experience_range ELSE jobs.experience_range END
+                experience_range=CASE WHEN excluded.experience_range!='' THEN excluded.experience_range ELSE jobs.experience_range END,
+                search_location=CASE WHEN excluded.search_location!='' THEN excluded.search_location ELSE jobs.search_location END
             """, j)
 
-def execute_search(req):
+def execute_search(req, release_search_lock=False):
+    try:
+        return _execute_search(req)
+    finally:
+        if release_search_lock:
+            SEARCH_LOCK.release()
+
+def _execute_search(req):
     started = time.time()
     search_id = str(int(time.time()*1000))
     SEARCH_STATUS.clear()
@@ -74,11 +84,15 @@ def execute_search(req):
             progress,
         )
         with connect() as db:
-            if jobs:
-                placeholders = ",".join("?" for _ in req.sources)
+            failed_sources = set(metadata.get("errors", {}))
+            successful_sources = [
+                source for source in req.sources if source not in failed_sources
+            ]
+            if successful_sources:
+                placeholders = ",".join("?" for _ in successful_sources)
                 db.execute(
                     f"DELETE FROM jobs WHERE lower(source) IN ({placeholders})",
-                    [source.lower() for source in req.sources],
+                    [source.lower() for source in successful_sources],
                 )
         save_jobs(jobs)
         status = "completed"
@@ -184,8 +198,14 @@ def location_suggestions(q: str):
 def search(req: SearchRequest, background_tasks: BackgroundTasks):
     invalid=set(req.sources)-set(VALID_SOURCES)
     if invalid: raise HTTPException(400, f"Unsupported sources: {sorted(invalid)}")
+    if not SEARCH_LOCK.acquire(blocking=False):
+        raise HTTPException(409, "A search is already running. Wait for it to finish before starting another.")
     # Background execution avoids holding the HTTP request open during multi-board scraping.
-    background_tasks.add_task(execute_search, req)
+    try:
+        background_tasks.add_task(execute_search, req, True)
+    except Exception:
+        SEARCH_LOCK.release()
+        raise
     return {"status":"started","message":"Search queued. Refresh jobs to see results."}
 
 @app.get("/api/search/status")
@@ -203,9 +223,12 @@ def jobs(q: Optional[str]=None, location: Optional[str]=None, source: Optional[s
     if q:
         clauses.append("(title LIKE ? OR company LIKE ? OR description LIKE ?)")
         values += [f"%{q}%"]*3
-    if location:
+    if location and location.strip().lower() not in {
+        "worldwide", "global", "anywhere", "remote worldwide", "remote anywhere"
+    }:
         location_term=location.split(",")[0].strip()
-        clauses.append("location LIKE ?"); values.append(f"%{location_term}%")
+        clauses.append("(location LIKE ? OR search_location LIKE ?)")
+        values.extend([f"%{location_term}%", f"%{location_term}%"])
     if source:
         source_values = [value.strip().lower() for value in source.split(",") if value.strip()]
         if source_values:

@@ -17,7 +17,7 @@
     <section class="search-card">
       <div class="intro">
         <h1>Find your next job</h1>
-        <p>Search multiple job portals from one place.</p>
+        <p>Search remote opportunities worldwide and explore additional job boards.</p>
       </div>
 
       <form id="search-form">
@@ -29,7 +29,7 @@
           <label class="location-box">
             <span>Location</span>
             <div class="location-autocomplete">
-              <input id="location" value="India" placeholder="e.g. Pune, India" autocomplete="off">
+              <input id="location" value="Worldwide" placeholder="City, country, or Worldwide" autocomplete="off">
               <div id="location-list" class="location-list" role="listbox" hidden></div>
             </div>
           </label>
@@ -41,7 +41,7 @@
         <div class="portal-heading">
           <div>
             <h2>Select job portals</h2>
-            <p>Turn portals on or off for this search.</p>
+            <p>Worldwide searches focus on remote jobs. Some portals still limit coverage by region.</p>
           </div>
           <div class="quick-actions">
             <button type="button" class="text-button" id="select-all">Select all</button>
@@ -50,6 +50,15 @@
           </div>
         </div>
         <div id="source-options" class="portal-list"></div>
+        <div class="direct-portals">
+          <strong>Search directly on more job boards</strong>
+          <span>These sites do not offer a public search API; they open separately and aren’t included in combined results.</span>
+          <div>
+            <a id="direct-portal-simplyhired" target="_blank" rel="noopener">SimplyHired ↗</a>
+            <a id="direct-portal-hiringcafe" target="_blank" rel="noopener">HiringCafe ↗</a>
+            <a id="direct-portal-jobright" target="_blank" rel="noopener">Jobright ↗</a>
+          </div>
+        </div>
 
         <div class="search-settings">
           <h3>Search settings</h3>

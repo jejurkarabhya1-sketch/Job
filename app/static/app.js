@@ -1,8 +1,24 @@
 const $ = id => document.getElementById(id);
-const sources = ["linkedin","indeed","glassdoor","zip_recruiter","google","bayt","naukri","bdjobs","hellowork"];
+const sources = ["linkedin","indeed","glassdoor","zip_recruiter","google","bayt","naukri","jobicy","remoteok","arbeitnow_eu","arbeitnow_uk"];
+const sourceCoverage = {
+  linkedin:"Worldwide remote search",
+  indeed:"Remote search · defaults to US",
+  glassdoor:"Remote search · availability varies",
+  zip_recruiter:"Primarily North America",
+  google:"Remote search · availability varies",
+  bayt:"Middle East and North Africa",
+  naukri:"Primarily India",
+  jobicy:"Remote · worldwide regions · recent 7-day feed",remoteok:"Remote · worldwide",
+  arbeitnow_eu:"Europe",arbeitnow_uk:"United Kingdom"
+};
+const directPortals = {
+  simplyhired:"https://www.simplyhired.com/search",
+  hiringcafe:"https://hiringcafe.com/",
+  jobright:"https://jobright.ai/"
+};
 let allJobs = [];
 let searchRunning = false;
-let currentLocation = "India";
+let currentLocation = "Worldwide";
 
 let locationTimer = null;
 let locationRequest = 0;
@@ -18,16 +34,37 @@ async function api(url, options={}){
   return data;
 }
 function labelFor(source){
-  return ({zip_recruiter:"ZipRecruiter",google:"Google Jobs",bdjobs:"BDJobs",hellowork:"HelloWork"})[source]
+  return ({
+    zip_recruiter:"ZipRecruiter",google:"Google Jobs",
+    remoteok:"Remote OK",arbeitnow_eu:"Arbeitnow Europe",arbeitnow_uk:"Arbeitnow UK"
+  })[source]
     || source.charAt(0).toUpperCase()+source.slice(1);
 }
 function initSources(){
   $("source-options").innerHTML=sources.map(source=>`
     <label class="portal-option">
-      <input type="checkbox" value="${source}" ${["linkedin","indeed","naukri"].includes(source)?"checked":""}>
-      <span class="switch"></span><span class="portal-name">${labelFor(source)}</span>
+      <input type="checkbox" value="${source}" ${["linkedin","indeed","glassdoor","google","jobicy","remoteok"].includes(source)?"checked":""}>
+      <span class="switch"></span><span class="portal-info"><span class="portal-name">${labelFor(source)}</span>
+      ${sourceCoverage[source]?`<small class="portal-coverage">${sourceCoverage[source]}</small>`:""}</span>
     </label>`).join("");
 }
+function isWorldwide(value){
+  return ["worldwide","global","anywhere","remote worldwide","remote anywhere"]
+    .includes(String(value||"").trim().toLowerCase());
+}
+function updateDirectPortalLinks(){
+  const search=new URL(directPortals.simplyhired);
+  const term=$("term").value.trim();
+  const location=$("location").value.trim();
+  if(term)search.searchParams.set("q",term);
+  if(location&&!isWorldwide(location))search.searchParams.set("l",location);
+  $("direct-portal-simplyhired").href=search.href;
+  $("direct-portal-hiringcafe").href=directPortals.hiringcafe;
+  $("direct-portal-jobright").href=directPortals.jobright;
+}
+$("term").addEventListener("input",updateDirectPortalLinks);
+$("location").addEventListener("input",updateDirectPortalLinks);
+updateDirectPortalLinks();
 function selectedSources(){
   return [...document.querySelectorAll("#source-options input:checked")].map(input=>input.value);
 }
@@ -130,7 +167,7 @@ $("search-form").addEventListener("submit",async event=>{
   $("job-rows").innerHTML='<tr><td colspan="6" class="empty">Searching selected portals. Job results will appear here when the search finishes…</td></tr>';
   const startedAt=Date.now();
   try{
-    currentLocation=$("location").value.trim()||"India";
+    currentLocation=$("location").value.trim()||"Worldwide";
     await api("/api/search",{method:"POST",body:JSON.stringify({
       search_term:$("term").value.trim(),
       location:currentLocation,
@@ -155,7 +192,7 @@ async function updateLocationSuggestions(){
   const input=$("location");
   const query=input.value.trim().toLowerCase();
   const requestId=++locationRequest;
-  if(query.length<2){
+  if(query.length<2||isWorldwide(query)){
     $("location-list").hidden=true;
     return;
   }

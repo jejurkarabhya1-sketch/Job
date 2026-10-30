@@ -26,6 +26,7 @@ def init_db():
             date_posted TEXT, job_url TEXT NOT NULL, description TEXT,
             min_amount REAL, max_amount REAL, currency TEXT,
             is_remote INTEGER DEFAULT 0, experience_range TEXT,
+            search_location TEXT DEFAULT '',
             skills TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             last_seen_at TEXT DEFAULT CURRENT_TIMESTAMP
         )""")
@@ -35,6 +36,8 @@ def init_db():
         }
         if "experience_range" not in job_columns:
             db.execute("ALTER TABLE jobs ADD COLUMN experience_range TEXT")
+        if "search_location" not in job_columns:
+            db.execute("ALTER TABLE jobs ADD COLUMN search_location TEXT DEFAULT ''")
         db.execute("""
         CREATE TABLE IF NOT EXISTS searches (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,7 +49,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS schedules (
             id INTEGER PRIMARY KEY CHECK (id=1),
             enabled INTEGER DEFAULT 0, search_term TEXT DEFAULT 'DevOps Engineer',
-            location TEXT DEFAULT 'India', sources TEXT DEFAULT 'linkedin,indeed,naukri',
+            location TEXT DEFAULT 'Worldwide', sources TEXT DEFAULT 'linkedin,indeed,jobicy,remoteok',
             interval_minutes INTEGER DEFAULT 360, last_run TEXT
         )""")
         db.execute("INSERT OR IGNORE INTO schedules(id) VALUES(1)")
