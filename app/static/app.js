@@ -42,12 +42,24 @@ function initSources(){
       <span class="switch"></span><span class="portal-info"><span class="portal-name">${labelFor(source)}</span>
       ${sourceCoverage[source]?`<small class="portal-coverage">${sourceCoverage[source]}</small>`:""}</span>
     </label>`).join("");
+  $("source-options").addEventListener("change",updateSelectedCount);
+  updateSelectedCount();
+}
+function updateSelectedCount(){
+  const count=selectedSources().length;
+  $("selected-count").textContent=`${count} portal${count===1?"":"s"} selected`;
 }
 function selectedSources(){
   return [...document.querySelectorAll("#source-options input:checked")].map(input=>input.value);
 }
-$("select-all").onclick=()=>document.querySelectorAll("#source-options input").forEach(input=>input.checked=true);
-$("clear-all").onclick=()=>document.querySelectorAll("#source-options input").forEach(input=>input.checked=false);
+$("select-all").onclick=()=>{
+  document.querySelectorAll("#source-options input").forEach(input=>input.checked=true);
+  updateSelectedCount();
+};
+$("clear-all").onclick=()=>{
+  document.querySelectorAll("#source-options input").forEach(input=>input.checked=false);
+  updateSelectedCount();
+};
 
 function esc(value){
   return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
@@ -80,13 +92,13 @@ function applyResultFilters(){
   $("job-count").textContent=filtered.length;
   $("job-rows").innerHTML=filtered.length?filtered.map((job,index)=>`
     <tr>
-      <td class="row-number">${index+1}</td>
-      <td><strong>${esc(job.title)}</strong>${esc(job.company||"Company not listed")}</td>
-      <td>${esc(job.location||"—")}</td>
-      <td><span class="source-tag">${esc(labelFor(job.source||"—"))}</span></td>
-      <td>${esc(job.date_posted||"—")}</td>
-      <td>${esc(job.experience_range||"Not specified")}</td>
-      <td><a href="${safeUrl(job.job_url)}" target="_blank" rel="noopener">View job ↗</a></td>
+      <td class="row-number" data-label="#">${index+1}</td>
+      <td class="job-title-cell"><strong>${esc(job.title)}</strong><span>${esc(job.company||"Company not listed")}</span></td>
+      <td data-label="Location">${esc(job.location||"—")}</td>
+      <td data-label="Portal"><span class="source-tag">${esc(labelFor(job.source||"—"))}</span></td>
+      <td data-label="Posted">${esc(job.date_posted||"—")}</td>
+      <td data-label="Experience">${esc(job.experience_range||"Not specified")}</td>
+      <td class="job-link-cell"><a href="${safeUrl(job.job_url)}" target="_blank" rel="noopener">View job ↗</a></td>
     </tr>`).join(""):`<tr><td colspan="7" class="empty">No matching jobs found. Try another keyword, location or portal.</td></tr>`;
 }
 async function loadJobs(location=currentLocation, selected=selectedSources()){
@@ -142,7 +154,7 @@ $("search-form").addEventListener("submit",async event=>{
   const button=$("search-button");
   searchRunning=true;button.disabled=true;button.innerHTML="Searching…";
   $("search-message").textContent="Starting search across selected portals…";
-  $("job-rows").innerHTML='<tr><td colspan="6" class="empty">Searching selected portals. Job results will appear here when the search finishes…</td></tr>';
+  $("job-rows").innerHTML='<tr><td colspan="7" class="empty">Searching selected portals. Job results will appear here when the search finishes…</td></tr>';
   const startedAt=Date.now();
   try{
     currentLocation=$("location").value.trim()||"Worldwide";
@@ -170,7 +182,7 @@ async function updateLocationSuggestions(){
   const input=$("location");
   const query=input.value.trim().toLowerCase();
   const requestId=++locationRequest;
-  if(query.length<2||isWorldwide(query)){
+  if(query.length<2||["worldwide","global","anywhere","remote worldwide","remote anywhere"].includes(query)){
     $("location-list").hidden=true;
     return;
   }

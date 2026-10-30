@@ -14,9 +14,9 @@
       <span class="byline">Developed by Abhishek Jejurkar</span>
     </header>
 
-    <section class="search-card">
+    <section class="search-card" aria-labelledby="search-title">
       <div class="intro">
-        <h1>Find your next job</h1>
+        <h1 id="search-title">Find your next job</h1>
         <p>Search worldwide without restricting results by location.</p>
       </div>
 
@@ -29,9 +29,11 @@
           <label class="location-box">
             <span>Location</span>
             <div class="location-autocomplete">
-              <input id="location" value="Worldwide" placeholder="City, country, or Worldwide" autocomplete="off">
+              <input id="location" placeholder="City or country (optional)" autocomplete="off"
+                aria-describedby="location-help" aria-controls="location-list" aria-autocomplete="list">
               <div id="location-list" class="location-list" role="listbox" hidden></div>
             </div>
+            <small id="location-help" class="field-help">Leave blank to search globally.</small>
           </label>
           <button class="search-button" type="submit" id="search-button">
             <span class="search-symbol">⌕</span> Search jobs
@@ -44,8 +46,9 @@
             <p>Worldwide searches include remote and onsite jobs. Some portals still limit coverage by region.</p>
           </div>
           <div class="quick-actions">
+            <span id="selected-count" class="selected-count" aria-live="polite"></span>
             <button type="button" class="text-button" id="select-all">Select all</button>
-            <span>·</span>
+            <span aria-hidden="true">·</span>
             <button type="button" class="text-button" id="clear-all">Clear</button>
           </div>
         </div>
@@ -80,17 +83,18 @@
           </div>
         </div>
       </form>
-      <div class="search-status" id="search-message" role="status">Choose portals and click Search jobs.</div>
+      <div class="search-status" id="search-message" role="status" aria-live="polite">Choose portals and click Search jobs.</div>
     </section>
 
-    <section class="results-card" id="results">
+    <section class="results-card" id="results" aria-labelledby="results-title">
       <div class="results-heading">
         <div>
-          <h2>Job results <span class="result-count" id="job-count">0</span></h2>
+          <h2 id="results-title">Job results <span class="result-count" id="job-count" aria-live="polite">0</span></h2>
           <p>Matching jobs found across your selected portals.</p>
         </div>
         <div class="result-actions">
-          <input id="filter" class="filter-input" placeholder="Filter results…">
+          <label class="visually-hidden" for="filter">Filter results</label>
+          <input id="filter" class="filter-input" placeholder="Filter results…" autocomplete="off">
           <button class="secondary" id="refresh" type="button">Refresh</button>
           <a class="secondary export" href="/api/export.xlsx">Export Excel ↓</a>
         </div>
