@@ -51,6 +51,7 @@ jobs:
           docker run -d --name jobpilot-test -p 8000:8000 jobpilot:test
           python - <<'PY'
           import time
+          import subprocess
           from urllib.request import urlopen
 
           for attempt in range(30):
@@ -62,7 +63,7 @@ jobs:
               except Exception:
                   time.sleep(1)
           else:
-              docker logs jobpilot-test || true
+              subprocess.run(["docker", "logs", "jobpilot-test"], check=False)
               raise SystemExit("JobPilot container did not become healthy")
           PY
           docker exec jobpilot-test python -c "import urllib.request; import json; d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/api/health')); assert d['status']=='ok'; assert 'linkedin' in d['sources']"
