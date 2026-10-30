@@ -1,0 +1,74 @@
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "python-jobspy"
+version = "1.4.1"
+description = "JobSpy: job scraper for LinkedIn, Indeed, Glassdoor, ZipRecruiter, Bayt, Naukri, BDJobs & HelloWork"
+authors = [
+    { name = "Cullen Watson", email = "cullen@cullenwatson.com" },
+    { name = "Zachary Hampton", email = "zachary@zacharysproducts.com" },
+]
+maintainers = [
+    { name = "Kirk Watson", email = "kirk@klwindustries.com" },
+]
+readme = "README.md"
+license = "MIT"
+keywords = ["jobs-scraper", "linkedin", "indeed", "glassdoor", "ziprecruiter", "bayt", "naukri", "bdjobs", "hellowork", "cli", "mcp", "mcp-server"]
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.2",
+    "pandas>=2.1.2",
+    "pydantic>=2.3.0",
+    "curl_cffi>=0.16.2",
+    "markdownify>=1.1.0",
+]
+dynamic = ["classifiers"]
+
+[project.optional-dependencies]
+mcp = ["mcp>=2.3.0"]
+
+[project.scripts]
+jobspy = "jobspy.cli:main"
+mcp-jobspy = "jobspy.mcp:main"
+
+[project.urls]
+Homepage = "https://github.com/speedyapply/JobSpy"
+Issues = "https://github.com/speedyapply/JobSpy/issues"
+"Release notes" = "https://github.com/speedyapply/JobSpy/releases"
+Documentation = "https://github.com/speedyapply/JobSpy#readme"
+
+[tool.poetry]
+packages = [{ include = "jobspy" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Office/Business",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[dependency-groups]
+dev = [
+    "ruff==0.16.10",
+    "mypy==2.4.0",
+    "pandas-stubs==2.3.3.260113",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "ANN401"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
+files = ["jobspy"]
+untyped_calls_exclude = ["curl_cffi.requests.models.Response.json"]

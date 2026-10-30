@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.venv/
+jobpilot.db
+.env
+.DS_Store

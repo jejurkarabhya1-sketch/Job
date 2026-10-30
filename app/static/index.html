@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JobPilot — Job Search</title>
+  <link rel="icon" href="/favicon.ico" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-icon">J</span><span>JobPilot</span></div>
+      <span class="byline">Developed by Abhishek Jejurkar</span>
+    </header>
+
+    <section class="search-card">
+      <div class="intro">
+        <h1>Find your next job</h1>
+        <p>Search multiple job portals from one place.</p>
+      </div>
+
+      <form id="search-form">
+        <div class="search-fields">
+          <label class="search-box">
+            <span>Job title or keywords</span>
+            <input id="term" value="DevOps Engineer" required placeholder="e.g. Python Developer">
+          </label>
+          <label class="location-box">
+            <span>Location</span>
+            <div class="location-autocomplete">
+              <input id="location" value="India" placeholder="e.g. Pune, India" autocomplete="off">
+              <div id="location-list" class="location-list" role="listbox" hidden></div>
+            </div>
+          </label>
+          <button class="search-button" type="submit" id="search-button">
+            <span class="search-symbol">⌕</span> Search jobs
+          </button>
+        </div>
+
+        <div class="portal-heading">
+          <div>
+            <h2>Select job portals</h2>
+            <p>Turn portals on or off for this search.</p>
+          </div>
+          <div class="quick-actions">
+            <button type="button" class="text-button" id="select-all">Select all</button>
+            <span>·</span>
+            <button type="button" class="text-button" id="clear-all">Clear</button>
+          </div>
+        </div>
+        <div id="source-options" class="portal-list"></div>
+
+        <div class="search-settings">
+          <h3>Search settings</h3>
+          <div class="settings-grid">
+            <label>Results per portal
+              <select id="count">
+                <option>10</option><option selected>25</option><option>50</option><option>100</option>
+              </select>
+            </label>
+            <label>Jobs posted within
+              <select id="age">
+                <option value="24">24 hours</option>
+                <option value="72">3 days</option>
+                <option value="168">7 days</option>
+                <option value="720" selected>30 days</option>
+              </select>
+            </label>
+            <label>Experience
+              <select id="experience">
+                <option value="any" selected>Any experience</option>
+                <option value="0-1">0-1 years</option>
+                <option value="1-3">1-3 years</option>
+                <option value="3-5">3-5 years</option>
+                <option value="5-8">5-8 years</option>
+                <option value="8+">8+ years</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </form>
+      <div class="search-status" id="search-message" role="status">Choose portals and click Search jobs.</div>
+    </section>
+
+    <section class="results-card" id="results">
+      <div class="results-heading">
+        <div>
+          <h2>Job results <span class="result-count" id="job-count">0</span></h2>
+          <p>Matching jobs found across your selected portals.</p>
+        </div>
+        <div class="result-actions">
+          <input id="filter" class="filter-input" placeholder="Filter results…">
+          <button class="secondary" id="refresh" type="button">Refresh</button>
+          <a class="secondary export" href="/api/export.xlsx">Export Excel ↓</a>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="count-column">#</th><th>JOB TITLE / COMPANY</th><th>LOCATION</th><th><span>PORTAL</span><select id="portal-filter" class="portal-filter" aria-label="Filter by portal"><option value="">All portals</option></select></th><th>POSTED</th><th>EXPERIENCE</th><th></th></tr></thead>
+          <tbody id="job-rows"><tr><td colspan="7" class="empty">Your job results will appear here after a search.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <footer>JobPilot · Developed by Abhishek Jejurkar</footer>
+  </main>
+  <div id="toast" class="toast" aria-live="polite"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
